@@ -1,34 +1,47 @@
 import { Play } from "phosphor-react";
 import { HomeContainer, CountdoenContainer, FormContainer, Separator, StartcountdownButton, TaskInput, MinutesAmountInput } from "./styles";
-import { useForm } from 'react-hook-form'
-import { zodResolver } from "@hookform/resolvers/zod"; 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod'; 
 import * as zod from 'zod';
 
+const newCycleFromValidatioSchema = zod.object({
+  task: zod.string().min(1, 'Informe a tarefa'),
+  minutesAmount: zod.number()
+    .min(5, 'O ciclo precisa ser de no mínimo 5 minutos')
+    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
+});
+
+interface NewCycleFromData {
+  task: string;
+  minutesAmount: number;
+}
 
 export function Home() {
-  const { register, handleSubmit,watch } = useForm()
+  const { register, handleSubmit, watch } = useForm<NewCycleFromData>({
+    resolver: zodResolver(newCycleFromValidatioSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  });
 
-
-
-  function handleCreateNewCycle(data:any) {
-    console.log(data)
+  function handleCreateNewCycle(data: NewCycleFromData) {
+    console.log(data);
   }
 
-  const task = watch( 'task')
+  const task = watch('task');
+
   return (
     <HomeContainer>
-      <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
+      <form onSubmit={handleSubmit(handleCreateNewCycle)}>
         <FormContainer>
-          <label htmlFor="">Vou trabalhar em </label>
+          <label htmlFor="task">Vou trabalhar em </label>
           <TaskInput
             id="task"
             list="task-suggestions"
             placeholder="Dê um nome para seu projeto..."
             {...register('task')}
-
           />
-
-
 
           <datalist id="task-suggestions">
             <option value="Projeto 1" />
@@ -38,18 +51,19 @@ export function Home() {
             <option value="banana" />
           </datalist>
 
-          <label htmlFor="minutesAmout">durante</label>
+          <label htmlFor="minutesAmount">durante</label>
           <MinutesAmountInput
-            type="number" id="minutesAmount"
+            type="number"
+            id="minutesAmount"
             placeholder="00"
             step={5}
             min={5}
             max={60}
-            {...register('minutesAmount',{valueAsNumber:true})} />
+            {...register('minutesAmount', { valueAsNumber: true })}
+          />
 
           <span>minutos.</span>
         </FormContainer>
-
 
         <CountdoenContainer>
           <span>0</span>
@@ -63,7 +77,6 @@ export function Home() {
           <Play size={24} />
           Começar
         </StartcountdownButton>
-
       </form>
     </HomeContainer>
   );
