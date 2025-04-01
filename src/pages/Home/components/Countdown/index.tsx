@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CountdoenContainer, Separator } from "./styles";
 import { differenceInSeconds } from "date-fns";
+import { CyclesContext } from "../..";
 
 
-interface CountdownProps{
-  activeCycle: any;
-  setCycles:any;
-  activeCycleId:any
-}
-export function Countdown ({activeCycle, setCycles,activeCycleId}: CountdownProps){
 
+export function Countdown (){
+
+  const {activeCycle, activeCycleId,markCurrentCycleAsFinished} = useContext(CyclesContext)
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
     const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
     
@@ -23,14 +21,7 @@ export function Countdown ({activeCycle, setCycles,activeCycleId}: CountdownProp
             const secondsDiffernce = differenceInSeconds(new Date(), activeCycle.startDate)
     
             if (secondsDiffernce >= totalSeconds) {
-              setCycles(state => state.map(cycle => {
-                if (cycle.id == activeCycleId) {
-                  return { ...cycle, finishedDate: new Date() }
-                } else {
-                  return cycle;
-                }
-              }),
-              )
+              markCurrentCycleAsFinished()
     
               setAmountSecondsPassed(totalSeconds)
               clearInterval(interval)
@@ -43,21 +34,24 @@ export function Countdown ({activeCycle, setCycles,activeCycleId}: CountdownProp
           clearInterval(interval)
         }
       }, [activeCycle, totalSeconds, activeCycleId])
+      
+        const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+      
+        const minutesAmount = Math.floor(currentSeconds / 60)
+        const secondsAmount = currentSeconds % 60
+      
+        const minutes = String(minutesAmount).padStart(2, '0')
+        const seconds = String(secondsAmount).padStart(2, '0')
+      
+        useEffect(() => {
+      
+          if (activeCycle) {
+            document.title = `${minutes}:${seconds}`
+          }
+        }, [minutes, seconds, activeCycle])
+      
     
-      function handleCreateNewCycle(data: NewCycleFromData) {
-        const id = String(new Date().getTime())
-        const newCycle: Cycle = {
-          id: id,
-          task: data.task,
-          minutesAmount: data.minutesAmount,
-          startDate: new Date()
-        }
-    
-        setCycles((state) => [...state, newCycle])
-        setActiveCycleId(id)
-        setAmountSecondsPassed(0)
-        reset()
-      }
+      
 
     return(
         <CountdoenContainer>
