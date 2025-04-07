@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, ReactNode, useState } from "react";
 
 interface CreateCycleDate{
    task:string,
@@ -15,23 +15,28 @@ interface Cycle {
 
 }
 interface CyclesContextType {
+  cycles: Cycle[]
     activeCycle: Cycle | undefined,
     activeCycleId: string | null,
     markCurrentCycleAsFinished: () => void,
     amountSecondsPassed: number,
     setSecondsPassed: (seconds: number) => void,
-    createNewCycle:(Date: NewCycleFromData) => void,
+    createNewCycle:(Date: CreateCycleDate) => void,
+    interruptCurrentCycle: () => void
 
 
 
 }
 
 
+interface CyclesContextProviderProps{
 
+  children: ReactNode
+}
 
 export const CyclesContext = createContext({} as CyclesContextType)
 
-export function CyclesContextProvider() {
+export function CyclesContextProvider({children}:CyclesContextProviderProps) {
     const [cycles, setCycles] = useState<Cycle[]>([])
     const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
     const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
@@ -53,7 +58,7 @@ export function CyclesContextProvider() {
     
       }
 
-       function createNewCycle(data: NewCycleFromData) {
+       function createNewCycle(data: CreateCycleDate) {
           const id = String(new Date().getTime())
           const newCycle: Cycle = {
             id: id,
@@ -65,7 +70,7 @@ export function CyclesContextProvider() {
           setCycles((state) => [...state, newCycle])
           setActiveCycleId(id)
           setAmountSecondsPassed(0)
-          reset()
+          //reset()
         }
       
       
@@ -90,8 +95,13 @@ export function CyclesContextProvider() {
             activeCycleId,
             markCurrentCycleAsFinished,
             amountSecondsPassed,
-            setSecondsPassed
-        }}></CyclesContext.Provider>
+            setSecondsPassed,
+            createNewCycle,
+            interruptCurrentCycle,
+            cycles
+        }}>
+          {children}
+        </CyclesContext.Provider>
   )
 }
 
